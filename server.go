@@ -27,7 +27,7 @@ func main() {
 
 	e.Use(middleware.CORS())
 
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
 
 	if err != nil {
 		panic(err.Error)
