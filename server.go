@@ -37,7 +37,7 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/nea_db")
 
 	if err != nil {
 		panic(err.Error)
@@ -63,7 +63,7 @@ func main() {
 }
 
 func getuserinfoAccount(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:@tcp(localhost:3306)/nea_db")
 
 	requested_id := c.Param("id")
 	fmt.Println(requested_id)
