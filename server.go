@@ -26,22 +26,6 @@ type Useraccounts struct {
 	Useraccounts []Useraccount `json:"useraccounts"`
 }
 
-func getUser(c echo.Context, db *sql.DB) error {
-	query, err := db.Query(`SELECT * FROM useraccounts`)
-
-	if err != nil {
-		panic(err.Error)
-	}
-
-	defer query.Close()
-
-	for query.Next() {
-
-	}
-
-	return c.JSON(http.StatusOK, db)
-}
-
 func main() {
 	e := echo.New()
 
@@ -53,7 +37,7 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:*pasword*@tcp(localhost:3306)/nea_db")
 
 	if err != nil {
 		panic(err.Error)
@@ -71,7 +55,6 @@ func main() {
 	e.GET("/useraccounts", func(c echo.Context) error {
 		requested_id := c.Param("id")
 		fmt.Println(requested_id)
-		fmt.Println("^^")
 		var firstname string
 		var surname string
 		var id string
@@ -81,19 +64,17 @@ func main() {
 		var addess string
 		var phone string
 
-		err = db.QueryRow("SELECT * FROM nea_db.useraccounts;").Scan(&id, &firstname, &surname, &email, &password, &registation_date, &addess, &phone)
+		err = db.QueryRow("SELECT * FROM nea_db.useraccounts WHERE user_id = 3;").Scan(&id, &firstname, &surname, &email, &password, &registation_date, &addess, &phone)
 
 		if err != nil {
 			fmt.Println(err)
 		}
 
 		response := Useraccount{Id: id, Firstname: firstname, Surname: surname, Email: email, Password: password, Registation_date: registation_date, Address: addess, Phone: phone}
-		return c.JSON(http.StatusOK, response)
-	})
 
-	/*e.GET("/", func(c echo.Context) error {
-		return getUser(c, db)
-	})*/
+		return c.JSON(http.StatusOK, response)
+
+	})
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
