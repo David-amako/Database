@@ -37,7 +37,7 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
 
 	if err != nil {
 		panic(err.Error)
@@ -63,7 +63,7 @@ func main() {
 }
 
 func getuserAccount(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
 
 	requested_id := c.Param("id")
 	fmt.Println(requested_id)
@@ -87,7 +87,6 @@ func getuserAccount(c echo.Context) error {
 		Registation_date: registation_date, Address: address, Phone: phone}
 
 	return c.JSON(http.StatusOK, response)
-
 }
 
 func createUserAccount(c echo.Context) error {
@@ -116,7 +115,6 @@ func createUserAccount(c echo.Context) error {
 	fmt.Println(result.LastInsertId())
 
 	return c.JSON(http.StatusCreated, emp.Firstname)
-
 }
 
 func updateUserAccount(c echo.Context) error {
