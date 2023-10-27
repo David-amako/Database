@@ -12,14 +12,14 @@ import (
 )
 
 type Useraccount struct {
-	Id               string `json:"User_id"`
-	Firstname        string `json:"Firstname"`
-	Surname          string `json:"Surname"`
-	Email            string `json:"Email"`
-	Password         string `json:"Password"`
-	Registation_date string `json:"Registration_date"`
-	Address          string `json:"Address"`
-	Phone            string `json:"Phone"`
+	//Id               string `json:"User_id"`
+	//Firstname        string `json:"Firstname"`
+	//Surname          string `json:"Surname"`
+	Email    string `json:"Email"`
+	Password string `json:"Password"`
+	//Registation_date string `json:"Registration_date"`
+	//Address          string `json:"Address"`
+	//Phone            string `json:"Phone"`
 }
 
 type Useraccounts struct {
@@ -37,7 +37,7 @@ func main() {
 		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
 	}))
 
-	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
 
 	if err != nil {
 		panic(err.Error)
@@ -57,39 +57,39 @@ func main() {
 		}
 	})
 
-	e.GET("/useraccounts", getuserAccount)
+	e.GET("/useraccounts", getuserinfoAccount)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
 
-func getuserAccount(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:*password*@tcp(localhost:3306)/nea_db")
+func getuserinfoAccount(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
 
 	requested_id := c.Param("id")
 	fmt.Println(requested_id)
-	var firstname string
-	var surname string
-	var id string
+	//var firstname string
+	//var surname string
+	//var id string
 	var email string
 	var password string
-	var registation_date string
-	var address string
-	var phone string
+	//var registation_date string
+	//var address string
+	//var phone string
 
-	err = db.QueryRow("SELECT * FROM nea_db.useraccounts WHERE user_id = 3;").Scan(&id, &firstname, &surname, &email,
-		&password, &registation_date, &address, &phone)
+	/*var sqlget string = ("SELECT email , Password FROM nea_db.useraccounts WHERE password = %s and email = %s;", , )*/
+
+	err = db.QueryRow("SELECT email , Password FROM nea_db.useraccounts").Scan(&email, &password)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	response := Useraccount{Id: id, Firstname: firstname, Surname: surname, Email: email, Password: password,
-		Registation_date: registation_date, Address: address, Phone: phone}
+	response := Useraccount{Email: email, Password: password}
 
 	return c.JSON(http.StatusOK, response)
 }
 
-func createUserAccount(c echo.Context) error {
+/*func createUserAccount(c echo.Context) error {
 	emp := new(Useraccount)
 	if err := c.Bind(emp); err != nil {
 		return err
@@ -115,9 +115,9 @@ func createUserAccount(c echo.Context) error {
 	fmt.Println(result.LastInsertId())
 
 	return c.JSON(http.StatusCreated, emp.Firstname)
-}
+}*/
 
-func updateUserAccount(c echo.Context) error {
+/*func updateUserAccount(c echo.Context) error {
 	id := c.Param("id") // Get the user ID from the URL parameter
 	userAccount := new(Useraccount)
 	if err := c.Bind(userAccount); err != nil {
@@ -135,7 +135,7 @@ func updateUserAccount(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, userAccount)
-}
+}*/
 
 func deleteUserAccount(c echo.Context) error {
 	id := c.Param("id") // Get the user ID from the URL parameter
