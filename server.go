@@ -12,18 +12,275 @@ import (
 )
 
 type Useraccount struct {
-	//Id               string `json:"User_id"`
-	//Firstname        string `json:"Firstname"`
-	//Surname          string `json:"Surname"`
 	Email    string `json:"Email"`
 	Password string `json:"Password"`
-	//Registation_date string `json:"Registration_date"`
-	//Address          string `json:"Address"`
-	//Phone            string `json:"Phone"`
 }
-
 type Useraccounts struct {
 	Useraccounts map[string]Useraccount `json:"useraccounts"`
+}
+type Item struct {
+	Title        string `json:"Title"`
+	Description  string `json:"Description"`
+	Current_bid  string `json:"Current_bid"`
+	Bid_duration string `json:"bid_duration"`
+	Seller       string `json:"Seller"`
+}
+type Items struct {
+	Items map[string]Item `json:"items"`
+}
+
+func getuserinfoAccount(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT user_id, email , Password FROM nea_db.useraccounts")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Useraccounts{Useraccounts: map[string]Useraccount{}}
+
+	for query.Next() {
+
+		var id string
+		var email string
+		var password string
+
+		err = (query).Scan(&id, &email, &password)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Useraccounts[id] = Useraccount{Email: email, Password: password}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforshoes(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Shoes\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforclothing(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Clothing\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforelectronics(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Electronics\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforsports(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Sports\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforhealth(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Health\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforfurniture(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Furniture\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getiteminfoforother(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	query, err := db.Query("SELECT Title, Description, Current_bid, Bid_duration, Seller, Category FROM items WHERE category = \"Other\"")
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Items{Items: map[string]Item{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var bid_duration string
+		var current_bid string
+		var seller string
+		var category string
+
+		err = (query).Scan(&title, &description, &current_bid, &bid_duration, &seller, &category)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Items[title] = Item{Title: title, Description: description, Current_bid: current_bid, Bid_duration: bid_duration, Seller: seller}
+
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 func main() {
@@ -58,43 +315,13 @@ func main() {
 	})
 
 	e.GET("/useraccounts", getuserinfoAccount)
+	e.GET("/shoeitems", getiteminfoforshoes)
+	e.GET("/clothingitems", getiteminfoforclothing)
+	e.GET("/electronicsitems", getiteminfoforelectronics)
+	e.GET("/sportsitems", getiteminfoforsports)
+	e.GET("/healthitems", getiteminfoforhealth)
+	e.GET("/furnitureitems", getiteminfoforfurniture)
+	e.GET("/otheritems", getiteminfoforother)
 
 	e.Logger.Fatal(e.Start(":1323"))
-}
-
-func getuserinfoAccount(c echo.Context) error {
-	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
-
-	query, err := db.Query("SELECT user_id, email , Password FROM nea_db.useraccounts")
-	if err != nil {
-		panic(err.Error)
-	}
-
-	defer query.Close()
-
-	response := Useraccounts{Useraccounts: map[string]Useraccount{}}
-
-	for query.Next() {
-
-		//requested_id := c.Param("id")
-		//fmt.Println(requested_id)
-		//var firstname string
-		//var surname string
-		var id string
-		var email string
-		var password string
-		//var registation_date string
-		//var address string
-		//var phone string
-
-		err = (query).Scan(&id, &email, &password)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		response.Useraccounts[id] = Useraccount{Email: email, Password: password}
-
-	}
-	return c.JSON(http.StatusOK, response)
 }
