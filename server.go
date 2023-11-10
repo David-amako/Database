@@ -15,6 +15,16 @@ type Useraccount struct {
 	Email    string `json:"Email"`
 	Password string `json:"Password"`
 }
+
+type addUseraccount struct {
+	AddFirstname string `json:"Firstname"`
+	AddSurname   string `json:"Surname"`
+	AddEmail     string `json:"Email"`
+	AddPassword  string `json:"Password"`
+	AddAddress   string `json:"Address"`
+	AddPhone     string `json:"Phone"`
+}
+
 type Useraccounts struct {
 	Useraccounts map[string]Useraccount `json:"useraccounts"`
 }
