@@ -17,12 +17,22 @@ type Useraccount struct {
 }
 
 type addUseraccount struct {
-	AddFirstname string `json:"Firstname"`
-	AddSurname   string `json:"Surname"`
-	AddEmail     string `json:"Email"`
-	AddPassword  string `json:"Password"`
-	AddAddress   string `json:"Address"`
-	AddPhone     string `json:"Phone"`
+	AddFirstname         string `json:"Firstname"`
+	AddSurname           string `json:"Surname"`
+	AddEmail             string `json:"Email"`
+	AddPassword          string `json:"Password"`
+	AddRegistration_date string `json:"Registration_date"`
+	AddPhone             string `json:"Phone"`
+}
+
+type additem struct {
+	AddTitle        string `json:"Title"`
+	AddDescription  string `json:"Description"`
+	AddStarting_bid string `json:"Starting_bid"`
+	AddCurrent_bid string `json:"Current_bid"`
+	AddBid_duration string `json:"Bid_duration"`
+	AddSeller       string `json:"Seller "`
+	AddCategory     string `json:"Category"`
 }
 
 type Useraccounts struct {
@@ -292,7 +302,73 @@ func getiteminfoforother(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response)
 }
+func connectDB() (*sql.DB, error) {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+func adduseracc(c echo.Context) error {
+	// Parse request body
+	var requestData addUseraccount
+	if err := c.Bind(&requestData); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+	}
 
+	// Connect to the database
+	db, err := connectDB()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	// Perform database operations (INSERT, UPDATE, etc.) using requestData
+	result, err := db.Exec("INSERT INTO `nea_db`.`useraccounts` (`Firstname`, `Surname`, `Email`, `Password`,`Registration_date`, `Phone`) VALUES (?, ?, ?, ?, ?, ?)",
+		requestData.AddFirstname, requestData.AddSurname, requestData.AddEmail, requestData.AddPassword, requestData.AddRegistration_date, requestData.AddPhone)
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to insert data"})
+	}
+
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+	}
+
+	// Return a response
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Data inserted successfully", "insertedID": insertedID})
+}
+func additems(c echo.Context) error {
+	// Parse request body
+	var requestData additem
+	if err := c.Bind(&requestData); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+	}
+
+	// Connect to the database
+	db, err := connectDB()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	// Perform database operations (INSERT, UPDATE, etc.) using requestData
+	result, err := db.Exec("INSERT INTO `nea_db`.`items` (`Title`, `Description`, `Starting_bid`, `Current_bid`, `Bid_duration`, `Seller`, `Category`) VALUES ('?', '?', '?', '?', '?', '?', '?');"
+		requestData.AddTitle, requestData.AddDescription, requestData.AddStarting_bid, requestData.AddCurrent_bid, requestData.AddBid_duration, requestData.AddSeller, requestData.AddCategory)
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to insert data"})
+	}
+
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+	}
+
+	// Return a response
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Data inserted successfully", "insertedID": insertedID})
+}
 func main() {
 	e := echo.New()
 
@@ -332,6 +408,8 @@ func main() {
 	e.GET("/healthitems", getiteminfoforhealth)
 	e.GET("/furnitureitems", getiteminfoforfurniture)
 	e.GET("/otheritems", getiteminfoforother)
+	e.POST("/adduser", adduseracc)
+	e.POST("/additem",additems)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
