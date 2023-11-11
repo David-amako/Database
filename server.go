@@ -29,7 +29,7 @@ type additem struct {
 	AddTitle        string `json:"Title"`
 	AddDescription  string `json:"Description"`
 	AddStarting_bid string `json:"Starting_bid"`
-	AddCurrent_bid string `json:"Current_bid"`
+	AddCurrent_bid  string `json:"Current_bid"`
 	AddBid_duration string `json:"Bid_duration"`
 	AddSeller       string `json:"Seller "`
 	AddCategory     string `json:"Category"`
@@ -354,7 +354,7 @@ func additems(c echo.Context) error {
 	defer db.Close()
 
 	// Perform database operations (INSERT, UPDATE, etc.) using requestData
-	result, err := db.Exec("INSERT INTO `nea_db`.`items` (`Title`, `Description`, `Starting_bid`, `Current_bid`, `Bid_duration`, `Seller`, `Category`) VALUES ('?', '?', '?', '?', '?', '?', '?');"
+	result, err := db.Exec("INSERT INTO `nea_db`.`items` (`Title`, `Description`, `Starting_bid`, `Current_bid`, `Bid_duration`, `Seller`, `Category`) VALUES ('?', '?', '?', '?', '?', '?', '?');",
 		requestData.AddTitle, requestData.AddDescription, requestData.AddStarting_bid, requestData.AddCurrent_bid, requestData.AddBid_duration, requestData.AddSeller, requestData.AddCategory)
 	if err != nil {
 		fmt.Println(err) // Handle the error appropriately
@@ -409,7 +409,7 @@ func main() {
 	e.GET("/furnitureitems", getiteminfoforfurniture)
 	e.GET("/otheritems", getiteminfoforother)
 	e.POST("/adduser", adduseracc)
-	e.POST("/additem",additems)
+	e.POST("/additem", additems)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
