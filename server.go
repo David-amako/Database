@@ -354,7 +354,7 @@ func additems(c echo.Context) error {
 	defer db.Close()
 
 	// Perform database operations (INSERT, UPDATE, etc.) using requestData
-	result, err := db.Exec("INSERT INTO `nea_db`.`items` (`Title`, `Description`, `Starting_bid`, `Current_bid`, `Bid_duration`, `Seller`, `Category`) VALUES ('?', '?', '?', '?', '?', '?', '?');",
+	result, err := db.Exec("INSERT INTO `nea_db`.`items` (`Title`, `Description`, `Starting_bid`, `Current_bid`, `Bid_duration`, `Seller`, `Category`) VALUES (?, ?, ?, ?, ?, ?, ?);",
 		requestData.AddTitle, requestData.AddDescription, requestData.AddStarting_bid, requestData.AddCurrent_bid, requestData.AddBid_duration, requestData.AddSeller, requestData.AddCategory)
 	if err != nil {
 		fmt.Println(err) // Handle the error appropriately
