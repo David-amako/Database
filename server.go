@@ -15,7 +15,6 @@ type Useraccount struct {
 	Email    string `json:"Email"`
 	Password string `json:"Password"`
 }
-
 type addUseraccount struct {
 	AddFirstname         string `json:"Firstname"`
 	AddSurname           string `json:"Surname"`
@@ -24,7 +23,6 @@ type addUseraccount struct {
 	AddRegistration_date string `json:"Registration_date"`
 	AddPhone             string `json:"Phone"`
 }
-
 type additem struct {
 	AddTitle        string `json:"Title"`
 	AddDescription  string `json:"Description"`
@@ -34,7 +32,18 @@ type additem struct {
 	AddSeller       string `json:"Seller "`
 	AddCategory     string `json:"Category"`
 }
-
+type UseraccountDetails struct {
+	Firstname        string `json:"Firstname"`
+	Surname          string `json:"Surname"`
+	Email            string `json:"Email"`
+	Password         string `json:"Password"`
+	RegistrationDate string `json:"Registration_Date"`
+	Address          string `json:"Address"`
+	Phone            string `json:"Phone"`
+}
+type UseraccountsDetails struct {
+	Useraccounts map[string]UseraccountDetails `json:"useraccounts"`
+}
 type Useraccounts struct {
 	Useraccounts map[string]Useraccount `json:"useraccounts"`
 }
@@ -47,6 +56,13 @@ type Item struct {
 }
 type Items struct {
 	Items map[string]Item `json:"items"`
+}
+
+type UpdateRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Field       string `json:"field"`
+	Value       string `json:"value"`
 }
 
 func getuserinfoAccount(c echo.Context) error {
@@ -369,6 +385,74 @@ func additems(c echo.Context) error {
 	// Return a response
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Data inserted successfully", "insertedID": insertedID})
 }
+func getUserDetails(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	query, err := db.Query("SELECT user_id, Firstname, Surname, email, Password, Registration_date, Address, Phone FROM nea_db.useraccounts")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to execute query"})
+	}
+	defer query.Close()
+
+	response := UseraccountsDetails{Useraccounts: map[string]UseraccountDetails{}}
+
+	for query.Next() {
+		var id string
+		var firstname string
+		var surname string
+		var email string
+		var password string
+		var registrationDate string
+		var address string
+		var phone string
+
+		err = query.Scan(&id, &firstname, &surname, &email, &password, &registrationDate, &address, &phone)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Useraccounts[id] = UseraccountDetails{
+			Firstname:        firstname,
+			Surname:          surname,
+			Email:            email,
+			Password:         password,
+			RegistrationDate: registrationDate,
+			Address:          address,
+			Phone:            phone,
+		}
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+func handleUpdate(c echo.Context) error {
+
+	var updateRequest UpdateRequest
+	if err := c.Bind(&updateRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON payload"})
+	}
+
+	// Execute the update query against the database
+	db, err := connectDB()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	// Execute the update query using parameters from the JSON payload
+	_, err = db.Exec("UPDATE items SET "+updateRequest.Field+" = ? WHERE title = ? AND description = ?",
+		updateRequest.Value, updateRequest.Title, updateRequest.Description)
+	if err != nil {
+		fmt.Println(err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to execute update query"})
+	}
+
+	// Return a success response
+	return c.JSON(http.StatusOK, map[string]string{"message": "Update successful"})
+}
 func main() {
 	e := echo.New()
 
@@ -408,8 +492,10 @@ func main() {
 	e.GET("/healthitems", getiteminfoforhealth)
 	e.GET("/furnitureitems", getiteminfoforfurniture)
 	e.GET("/otheritems", getiteminfoforother)
+	e.GET("/user", getUserDetails)
 	e.POST("/adduser", adduseracc)
 	e.POST("/additem", additems)
+	e.POST("/updateitem", handleUpdate)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
