@@ -67,9 +67,34 @@ type Item struct {
 	End_date    string `json:"end_date"`
 	Seller      string `json:"Seller"`
 }
+type myItem struct {
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	Starting_bid      string `json:"starting_bid"`
+	Current_bid       string `json:"current_bid"`
+	End_date          string `json:"end_date"`
+	CurrentBid_holder string `json:"currentBid_holder"`
+}
+type myItems struct {
+	MyItems map[string]myItem `json:"myitems"`
+}
+type myBid struct {
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	Starting_bid      string `json:"starting_bid"`
+	Bid_amount        string `json:"bid_amount"`
+	Current_bid       string `json:"current_bid"`
+	Bid_date          string `json:"bid_date"`
+	End_date          string `json:"end_date"`
+	CurrentBid_holder string `json:"currentBid_holder"`
+}
+type myBids struct {
+	MyBids map[string]myBid `json:"myitems"`
+}
 type Items struct {
 	Items map[string]Item `json:"items"`
 }
+
 type addbid struct {
 	AddItem_number string `json:"item_number"`
 	AddUser_id     string `json:"user_id"`
@@ -338,6 +363,102 @@ func getiteminfoforother(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, response)
 }
+func getmyitems(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requested_id := c.Param("id")
+	fmt.Println(requested_id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	query, err := db.Query("SELECT items.Title, items.Description, items.Starting_bid, items.Current_bid, items.End_date, items.CurrentBid_holder FROM nea_db.items INNER JOIN useraccounts ON items.Seller = useraccounts.email Where useraccounts.User_id = ?", requested_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to execute query"})
+	}
+
+	defer query.Close()
+
+	response := myItems{MyItems: map[string]myItem{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var starting_bid string
+		var current_bid string
+		var end_date string
+		var currentBid_holder string
+
+		err = (query).Scan(&title, &description, &starting_bid, &current_bid, &end_date, &currentBid_holder)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.MyItems[title] = myItem{
+			Title:             title,
+			Description:       description,
+			Starting_bid:      starting_bid,
+			Current_bid:       current_bid,
+			End_date:          end_date,
+			CurrentBid_holder: currentBid_holder}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getmybids(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requested_id := c.Param("id")
+	fmt.Println(requested_id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	query, err := db.Query("SELECT items.Title, items.Description, items.Starting_bid, bids.Bid_amount, items.Current_bid, bids.Bid_date, items.End_date, items.CurrentBid_holder FROM nea_db.items, nea_db.bids INNER JOIN nea_db.useraccounts ON useraccounts.User_id = bids.User_id WHERE useraccounts.User_id = ? AND bids.Item_number = items.Item_number;", requested_id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to execute query"})
+	}
+
+	defer query.Close()
+
+	response := myBids{MyBids: map[string]myBid{}}
+
+	for query.Next() {
+
+		var title string
+		var description string
+		var starting_bid string
+		var bid_amount string
+		var current_bid string
+		var bid_date string
+		var end_date string
+		var currentBid_holder string
+
+		err = (query).Scan(&title, &description, &starting_bid, &bid_amount, &current_bid, &bid_date, &end_date, &currentBid_holder)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.MyBids[title] = myBid{
+			Title:             title,
+			Description:       description,
+			Starting_bid:      starting_bid,
+			Bid_amount:        bid_amount,
+			Current_bid:       current_bid,
+			Bid_date:          bid_date,
+			End_date:          end_date,
+			CurrentBid_holder: currentBid_holder}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
 func connectDB() (*sql.DB, error) {
 	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
 	if err != nil {
@@ -600,6 +721,8 @@ func main() {
 	e.GET("/furnitureitems", getiteminfoforfurniture)
 	e.GET("/otheritems", getiteminfoforother)
 	e.GET("/user/:email", getUserDetails)
+	e.GET("/myitems/:id", getmyitems)
+	e.GET("/mybids/:id", getmybids)
 	e.GET("/item", getItemDetails)
 	e.POST("/adduser", adduseracc)
 	e.POST("/additem", additems)
