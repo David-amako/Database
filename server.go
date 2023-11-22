@@ -94,12 +94,45 @@ type myBids struct {
 type Items struct {
 	Items map[string]Item `json:"items"`
 }
+type NoOfBid struct {
+	Title     string `json:"title"`
+	TotalBids string `json:"totalBids"`
+}
+type NoOfBids struct {
+	NoOfBids map[string]NoOfBid `json:"noOfBid"`
+}
+type NoOfBidsum struct {
+	Title     string `json:"title"`
+	TotalBids string `json:"totalBids"`
+}
+type NoOfBidsums struct {
+	NoOfBidsums map[string]NoOfBidsum `json:"noOfBidsums"`
+}
 
+type Mostfre struct {
+	Id              string `json:"id"`
+	Firstname       string `json:"firstname"`
+	Surname         string `json:"surname"`
+	TotalBidsPlaced string `json:"totalBidsPlaced"`
+}
+type Mostfres struct {
+	Mostfres map[string]Mostfre `json:"Mostfres"`
+}
+type Review struct {
+	Review string `json:"review"`
+}
+type Reviews struct {
+	Reviews map[string]Review `json:"Reviews"`
+}
 type addbid struct {
 	AddItem_number string `json:"item_number"`
 	AddUser_id     string `json:"user_id"`
 	AddBid_amount  string `json:"bid_amount"`
 	AddBid_date    string `json:"bid_date"`
+}
+type addReview struct {
+	Additem_number string `json:"item_number"`
+	Addreview      string `json:"review"`
 }
 type UpdateRequest struct {
 	Title       string `json:"title"`
@@ -108,6 +141,12 @@ type UpdateRequest struct {
 	Value1      string `json:"value1"`
 	Field2      string `json:"field2"`
 	Value2      string `json:"value2"`
+}
+type Nullbid struct {
+	Title string `json:"title"`
+}
+type Nullbids struct {
+	Nullbids map[string]Nullbid `json:"Nullbids"`
 }
 
 func getuserinfoAccount(c echo.Context) error {
@@ -526,6 +565,36 @@ func additems(c echo.Context) error {
 	// Return a response
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Data inserted successfully", "insertedID": insertedID})
 }
+func addReviews(c echo.Context) error {
+	// Parse request body
+	var requestData addReview
+	if err := c.Bind(&requestData); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+	}
+
+	// Connect to the database
+	db, err := connectDB()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database connection error"})
+	}
+	defer db.Close()
+
+	// Perform database operations (INSERT, UPDATE, etc.) using requestData
+	result, err := db.Exec("INSERT INTO `nea_db`.`reviews` (`Item_number`, `Review`) VALUES (?, ?);",
+		requestData.Additem_number, requestData.Addreview)
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to insert data"})
+	}
+
+	insertedID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println(err) // Handle the error appropriately
+	}
+
+	// Return a response
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Data inserted successfully", "insertedID": insertedID})
+}
 func addbids(c echo.Context) error {
 	// Parse request body
 	var requestData addbid
@@ -656,6 +725,154 @@ func getItemDetails(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+func NoOfBidsCalc(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requestedTitle := c.QueryParam("title")
+	requestedDescription := c.QueryParam("description")
+
+	query, err := db.Query("SELECT i.title, COUNT(b.bid_id) AS totalBids FROM items i LEFT JOIN bids b ON i.item_number = b.item_number where Title = ? AND Description = ? GROUP BY i.title;", requestedTitle, requestedDescription)
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := NoOfBids{NoOfBids: map[string]NoOfBid{}}
+
+	for query.Next() {
+
+		var title string
+		var totalBids string
+
+		err = (query).Scan(&title, &totalBids)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.NoOfBids[title] = NoOfBid{Title: title, TotalBids: totalBids}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func MostFreqbid(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requestedTitle := c.QueryParam("title")
+	requestedDescription := c.QueryParam("description")
+
+	query, err := db.Query("SELECT u.user_id,u.Firstname,u.Surname, COUNT(b.bid_id) AS totalBidsPlaced FROM UserAccounts u LEFT JOIN bids b ON u.user_id = b.user_id INNER JOIN items i ON i.Item_number = b.Item_number Where Title = ? AND Description = ? GROUP BY u.user_id, u.Firstname,u.Surname ORDER BY totalBidsPlaced DESC limit 10;", requestedTitle, requestedDescription)
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Mostfres{Mostfres: map[string]Mostfre{}}
+
+	for query.Next() {
+		var id string
+		var firstname string
+		var surname string
+		var totalBidsPlaced string
+
+		err = (query).Scan(&id, &firstname, &surname, &totalBidsPlaced)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Mostfres[id] = Mostfre{Id: id, Firstname: firstname, Surname: surname, TotalBidsPlaced: totalBidsPlaced}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getNullBids(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requestedTitle := c.Param("seller")
+
+	query, err := db.Query("SELECT i.title FROM items i LEFT JOIN Bids b ON i.item_number = b.item_number WHERE b.bid_id IS NULL AND Seller = ?;", requestedTitle)
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Nullbids{Nullbids: map[string]Nullbid{}}
+
+	for query.Next() {
+		var title string
+
+		err = (query).Scan(&title)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Nullbids[title] = Nullbid{Title: title}
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func Bidsum(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requestedDescription := c.Param("id")
+
+	query, err := db.Query("SELECT u.user_id, SUM(b.bid_amount) AS totalBids FROM UserAccounts u LEFT JOIN Bids b ON u.user_id = b.user_id WHERE u.user_id = ? GROUP BY u.user_id, u.Firstname,u.Surname;", requestedDescription)
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := NoOfBidsums{NoOfBidsums: map[string]NoOfBidsum{}}
+
+	for query.Next() {
+
+		var title string
+		var totalBids string
+
+		err = (query).Scan(&title, &totalBids)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.NoOfBidsums[title] = NoOfBidsum{Title: title, TotalBids: totalBids}
+
+	}
+	return c.JSON(http.StatusOK, response)
+}
+func getReviews(c echo.Context) error {
+	db, err := sql.Open("mysql", "root:bball616.DAS@tcp(localhost:3306)/nea_db")
+
+	requestedTitle := c.Param("item_number")
+
+	query, err := db.Query("SELECT r.idReviews, r.Review FROM nea_db.reviews r INNER JOIN nea_db.items ON items.Item_number = r.Item_number WHERE items.Item_number = ?;", requestedTitle)
+	if err != nil {
+		panic(err.Error)
+	}
+
+	defer query.Close()
+
+	response := Reviews{Reviews: map[string]Review{}}
+
+	for query.Next() {
+		var id string
+		var review string
+
+		err = (query).Scan(&id, &review)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response.Reviews[id] = Review{Review: review}
+	}
+	return c.JSON(http.StatusOK, response)
+}
 func handleUpdate(c echo.Context) error {
 
 	var updateRequest UpdateRequest
@@ -721,13 +938,19 @@ func main() {
 	e.GET("/furnitureitems", getiteminfoforfurniture)
 	e.GET("/otheritems", getiteminfoforother)
 	e.GET("/user/:email", getUserDetails)
+	e.GET("/nbid/:seller", getNullBids)
 	e.GET("/myitems/:id", getmyitems)
 	e.GET("/mybids/:id", getmybids)
+	e.GET("/bidsum/:id", Bidsum)
+	e.GET("/reviews/:item_number", getReviews)
 	e.GET("/item", getItemDetails)
+	e.GET("/calitem", NoOfBidsCalc)
+	e.GET("/Mostfre", MostFreqbid)
 	e.POST("/adduser", adduseracc)
 	e.POST("/additem", additems)
 	e.POST("/updateitem", handleUpdate)
 	e.POST("/addbid", addbids)
+	e.POST("/addReview", addReviews)
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
